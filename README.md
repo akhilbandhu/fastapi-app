@@ -59,6 +59,26 @@ service.yaml
 
 ## Getting Started
 
+The following instructions are for local deployment on Minikube.
+To get a quick start, run the following command:
+```
+./app/setup.sh
+```
+After the setup is complete, you can access the application via Minikube service or NodePort.
+To access Grafana, navigate to http://localhost:3000 and log in with username 'admin' and the retrieved password.
+
+To start the service, run the following command:
+```
+minikube service fastapi-service
+```
+
+To cleanup the deployment, run the following command:
+```
+./app/cleanup.sh
+```
+
+If you want to do it manually, follow the steps below:
+
 1. Build the Docker image:
    ```
    docker build -t fastapi-app:latest ./app
@@ -82,3 +102,74 @@ service.yaml
 
 For a complete list of Python dependencies, see:
 app/requirements.txt
+
+## Integrating Prometheus and Grafana for Monitoring
+
+This section guides you through integrating Prometheus and Grafana to monitor your FastAPI application running on Kubernetes.
+
+### Overview
+
+	•	Prometheus: Collects and stores metrics from your application and cluster.
+	•	Grafana: Visualizes the metrics collected by Prometheus.
+
+### Install Helm
+
+Helm is a package manager for Kubernetes. It simplifies the deployment and management of applications on Kubernetes.
+
+#### macOS
+
+```
+brew install helm
+```
+
+### Add Helm Repositories
+
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+### Install Prometheus
+
+```
+helm install monitoring prometheus-community/kube-prometheus-stack
+```
+
+### Expose Grafana Service
+
+```
+kubectl port-forward svc/monitoring-grafana 3000:80
+```
+
+### Access Grafana
+
+Open your web browser and navigate to `http://localhost:3000`. Use the default username and password `admin` to log in.
+
+### Retieve Grafana Password
+
+```
+kubectl get secret --namespace default monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+```
+
+Username: admin
+Password: Use the output from the command above.
+
+### Verify Prometheus Target
+
+```
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
+```
+
+Open your web browser and navigate to `http://localhost:9090`.
+
+
+## Cleanup
+# Delete application resources
+kubectl delete -f deployment.yaml
+kubectl delete -f service.yaml
+
+# Delete Prometheus and Grafana
+helm uninstall monitoring
+
+# If using Minikube, stop the cluster
+minikube stop

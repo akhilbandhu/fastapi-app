@@ -1,11 +1,17 @@
 from fastapi import FastAPI
+from prometheus_client import Counter
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 app = FastAPI()
 
+# Add middleware
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
+
+# Define custom metrics
+REQUEST_COUNT = Counter("request_count", "Total number of requests")
+
 @app.get("/")
 def read_root():
-    return {"message": "Hello, Kubernetes!"}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+    REQUEST_COUNT.inc()
+    return {"message": "Hello, Kubernetes with Monitoring!"}

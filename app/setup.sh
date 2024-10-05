@@ -68,6 +68,15 @@ GRAFANA_PASSWORD=$(kubectl get secret --namespace $NAMESPACE $PROM_RELEASE_NAME-
 
 echo "Grafana admin password: $GRAFANA_PASSWORD"
 
+# Create Grafana dashboard
+echo "Creating Grafana dashboard..."
+kubectl create configmap grafana-dashboard-config --from-file=../app/grafana-dashboard.json -n $NAMESPACE
+kubectl label configmap grafana-dashboard-config grafana_dashboard=1 -n $NAMESPACE
+
+# Wait for the dashboard to be created
+echo "Waiting for Grafana dashboard to be created..."
+kubectl rollout status deployment/$PROM_RELEASE_NAME-grafana
+
 # Port-forward Grafana (in the background)
 echo "Port-forwarding Grafana service to localhost:3000..."
 kubectl port-forward svc/$PROM_RELEASE_NAME-grafana 3000:80 --namespace $NAMESPACE >/dev/null 2>&1 &

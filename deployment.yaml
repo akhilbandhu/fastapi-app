@@ -13,7 +13,7 @@ spec:
         app: fastapi
       annotations:
         prometheus.io/scrape: 'true'
-        prometheus.io/port: '8000'
+        prometheus.io/port: '80'
     spec:
       containers:
       - name: fastapi-container

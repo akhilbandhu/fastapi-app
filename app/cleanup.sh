@@ -14,6 +14,10 @@ kubectl delete -f service.yaml
 
 # Uninstall Prometheus and Grafana
 echo "Uninstalling Prometheus and Grafana..."
+# Delete Grafana dashboard ConfigMap
+echo "Deleting Grafana dashboard ConfigMap..."
+kubectl delete configmap grafana-dashboard-config -n $NAMESPACE
+
 helm uninstall $PROM_RELEASE_NAME --namespace $NAMESPACE
 
 # Kill any port-forwarding processes if running

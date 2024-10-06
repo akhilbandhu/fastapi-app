@@ -2,7 +2,6 @@ from locust import HttpUser, task, between
 import random
 
 class FastAPIUser(HttpUser):
-    host = "http://localhost:64004"  # Ensure this matches your NodePort and accessible from where Locust runs
     wait_time = between(1, 5)
 
     @task(2)

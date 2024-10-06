@@ -13,11 +13,11 @@ spec:
         app: fastapi
       annotations:
         prometheus.io/scrape: 'true'
-        prometheus.io/port: '80'
+        prometheus.io/port: '8000'
     spec:
       containers:
       - name: fastapi-container
         image: fastapi-app:latest
-        imagePullPolicy: Never  
+        imagePullPolicy: Never
         ports:
-        - containerPort: 80
+        - containerPort: 8000

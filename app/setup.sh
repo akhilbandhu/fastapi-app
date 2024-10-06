@@ -17,16 +17,12 @@ command_exists() {
 echo "Starting setup..."
 
 # Check for required commands
-for cmd in docker kubectl helm; do
+for cmd in docker kubectl helm minikube; do
     if ! command_exists $cmd; then
         echo "Error: $cmd is not installed."
         exit 1
     fi
 done
-
-# Build the Docker image
-echo "Building Docker image..."
-docker build -t $DOCKER_IMAGE .
 
 # Start Minikube if not running
 if ! minikube status >/dev/null 2>&1; then
@@ -39,13 +35,17 @@ echo "Setting up Docker environment for Minikube..."
 eval $(minikube docker-env)
 
 # Build the Docker image inside Minikube's Docker daemon
-echo "Building Docker image inside Minikube's Docker daemon..."
+echo "Building Docker image..."
 docker build -t $DOCKER_IMAGE .
 
 # Apply Kubernetes configurations
 echo "Applying Kubernetes configurations..."
 kubectl apply -f ../deployment.yaml
 kubectl apply -f ../service.yaml
+
+# Apply ServiceMonitor configuration
+echo "Applying ServiceMonitor configuration..."
+kubectl apply -f ../service-monitor.yaml
 
 # Wait for Pods to be ready
 echo "Waiting for Pods to be ready..."
@@ -94,10 +94,11 @@ echo "To access Grafana, navigate to http://localhost:3000 and log in with usern
 # Function to clean up resources
 cleanup() {
     echo "Cleaning up..."
-    kubectl delete -f deployment.yaml
-    kubectl delete -f service.yaml
+    kubectl delete -f ../deployment.yaml
+    kubectl delete -f ../service.yaml
+    kubectl delete -f ../service-monitor.yaml
+    kubectl delete configmap grafana-dashboard-config -n $NAMESPACE
     helm uninstall $PROM_RELEASE_NAME
-    kill $GRAFANA_PID
     minikube stop
     echo "Cleanup complete!"
     exit

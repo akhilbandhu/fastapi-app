@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fastapi-service-monitor
+  labels:
+    release: monitoring  # This label should match the label used by your Prometheus instance
+spec:
+  selector:
+    matchLabels:
+      app: fastapi  # This should match the label on your Service
+  endpoints:
+    - port: http  # This should match the port name in your Service definition
+      path: /metrics
+      interval: 15s
+  namespaceSelector:
+    matchNames:
+      - default  # Namespace where your application is deployed

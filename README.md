@@ -72,10 +72,13 @@ To start the service, run the following command:
 minikube service fastapi-service
 ```
 
-To cleanup the deployment, run the following command:
+To start locust, run the following command:
 ```
-./app/cleanup.sh
+locust -f app/locustfile.py --host=<URL-FROM-MINIKUBE-COMMAND-ABOVE>
 ```
+
+Add number of workers and per second spawn rate in the UI as you want. 
+You can see the results in the locust UI and then also in Grafana under FastAPI monitoringdashboard.
 
 If you want to do it manually, follow the steps below:
 

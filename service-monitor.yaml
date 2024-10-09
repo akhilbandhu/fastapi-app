@@ -3,15 +3,39 @@ kind: ServiceMonitor
 metadata:
   name: fastapi-service-monitor
   labels:
-    release: monitoring  # This label should match the label used by your Prometheus instance
+    release: monitoring
 spec:
   selector:
     matchLabels:
-      app: fastapi  # This should match the label on your Service
+      app: fastapi
   endpoints:
-    - port: http  # This should match the port name in your Service definition
+    - port: http
       path: /metrics
       interval: 15s
-  namespaceSelector:
-    matchNames:
-      - default  # Namespace where your application is deployed
+    - port: http
+      path: /
+      interval: 15s
+    - port: http
+      path: /health
+      interval: 15s
+    - port: http
+      path: /items/{item_id}
+      interval: 15s
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'http_request_duration_seconds.*'
+          action: keep
+    - port: http
+      path: /generate
+      interval: 15s
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'http_request_duration_seconds.*'
+          action: keep
+    - port: http
+      path: /generate_quantized
+      interval: 15s
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'http_request_duration_seconds.*'
+          action: keep

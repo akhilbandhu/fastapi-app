@@ -4,3 +4,5 @@ starlette-exporter
 prometheus-client
 gunicorn
 locust
+torch
+transformers

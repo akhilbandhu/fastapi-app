@@ -24,10 +24,12 @@ for cmd in docker kubectl helm minikube; do
     fi
 done
 
-# Start Minikube if not running
+# Start Minikube if not running, with increased resources
 if ! minikube status >/dev/null 2>&1; then
-    echo "Starting Minikube..."
-    minikube start
+    echo "Starting Minikube with increased resources..."
+    minikube start --cpus 4 --memory 7680
+else
+    echo "Minikube is already running. Continuing with setup..."
 fi
 
 # Set up Docker environment for Minikube
@@ -37,6 +39,16 @@ eval $(minikube docker-env)
 # Build the Docker image inside Minikube's Docker daemon
 echo "Building Docker image..."
 docker build -t $DOCKER_IMAGE .
+
+# Install Prometheus and Grafana using Helm
+echo "Installing Prometheus and Grafana..."
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm upgrade --install $PROM_RELEASE_NAME prometheus-community/kube-prometheus-stack
+
+# Wait for Prometheus CRDs to be ready
+echo "Waiting for Prometheus CRDs to be ready..."
+kubectl wait --for condition=established --timeout=60s crd/servicemonitors.monitoring.coreos.com
 
 # Apply Kubernetes configurations
 echo "Applying Kubernetes configurations..."
@@ -50,12 +62,6 @@ kubectl apply -f ../service-monitor.yaml
 # Wait for Pods to be ready
 echo "Waiting for Pods to be ready..."
 kubectl rollout status deployment/fastapi-deployment
-
-# Install Prometheus and Grafana using Helm
-echo "Installing Prometheus and Grafana..."
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm install $PROM_RELEASE_NAME prometheus-community/kube-prometheus-stack
 
 # Wait for Prometheus and Grafana Pods to be ready
 echo "Waiting for Prometheus and Grafana to be ready..."
